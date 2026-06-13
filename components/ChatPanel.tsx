@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { getStorage } from "@/lib/storage";
-import { postJson } from "@/lib/utils/api";
+import { postJson, ApiError } from "@/lib/utils/api";
 import { useHydrated } from "@/lib/hooks/useHydrated";
 import { sanitizeText } from "@/lib/utils/sanitize";
 import { cn } from "@/lib/utils/cn";
@@ -85,8 +85,13 @@ export function ChatPanel() {
         ...prev,
         { role: "assistant", content: data.reply },
       ]);
-    } catch {
-      setError("I couldn't reply just now. Please try again.");
+    } catch (err) {
+      // Show the server's safe message (e.g. the rate-limit notice) when we have one.
+      setError(
+        err instanceof ApiError
+          ? err.message
+          : "I couldn't reply just now. Please try again.",
+      );
     } finally {
       setLoading(false);
     }

@@ -131,8 +131,8 @@ export function DashboardView() {
           </p>
         ) : (
           <ul className="list-disc space-y-1 pl-5">
-            {strategies.map((s, i) => (
-              <li key={i}>{s}</li>
+            {strategies.map((s) => (
+              <li key={s}>{s}</li>
             ))}
           </ul>
         )}

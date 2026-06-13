@@ -2,17 +2,13 @@ import type { ChatContext, ChatMessage } from "@/lib/validation/chat-schema";
 import { classifyRisk } from "./safety-classifier";
 import { buildChatSystemPrompt } from "./prompt-templates";
 import { isMockMode, openAIChat } from "./ai-client";
+import { CRISIS_CHAT_REPLY } from "./safety-copy";
 
 export type ChatResult = {
   reply: string;
   /** When true, the client should route the student to /safety. */
   crisis: boolean;
 };
-
-/** The supportive, non-advice message shown when crisis language is detected. */
-const CRISIS_REPLY =
-  "It sounds like you're carrying something really heavy right now, and I'm glad you said it. " +
-  "I'm not able to give the kind of help you deserve in this moment — please reach out to someone you trust or contact emergency support now. You don't have to be alone with this.";
 
 type Theme =
   | "behind"
@@ -99,7 +95,7 @@ export async function respondToChat(
   if (lastUser) {
     const risk = classifyRisk({ text: lastUser.content });
     if (risk.isCrisis) {
-      return { reply: CRISIS_REPLY, crisis: true };
+      return { reply: CRISIS_CHAT_REPLY, crisis: true };
     }
   }
 

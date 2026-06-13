@@ -1,6 +1,7 @@
 import type { CheckIn, ReflectionContent } from "@/lib/types";
 import { classifyRisk } from "./safety-classifier";
 import { generateReflection } from "./ai-client";
+import { CRISIS_REFLECTION, HIGH_RISK_SAFETY_NOTE } from "./safety-copy";
 import type { AnalyzeContext } from "./prompt-templates";
 
 /**
@@ -11,25 +12,6 @@ import type { AnalyzeContext } from "./prompt-templates";
  * call the model and never produce normal advice or diagnosis — we return a
  * minimal, supportive reflection that points the student to human support.
  */
-
-function crisisReflection(): ReflectionContent {
-  return {
-    emotionalSummary:
-      "It sounds like you're carrying something very heavy right now, and what you're feeling matters.",
-    detectedTriggers: [],
-    patternHypothesis:
-      "Right now the most important thing isn't analysis — it's that you're not alone with this.",
-    copingStrategy:
-      "Please reach out to a trusted person or emergency support now. You deserve immediate human support.",
-    mindfulnessExercise:
-      "If it helps while you reach out: place a hand on your chest and take three slow breaths.",
-    motivationalReframe:
-      "Asking for help is a strong and caring thing to do for yourself.",
-    riskLevel: "CRISIS",
-    safetyNotes:
-      "Crisis language detected. The student should be routed to /safety and encouraged to contact a trusted person or emergency support immediately. MindMate is not an emergency service.",
-  };
-}
 
 export async function analyzeCheckIn(
   checkIn: CheckIn,
@@ -44,7 +26,7 @@ export async function analyzeCheckIn(
 
   // Crisis path: skip the model entirely.
   if (risk.isCrisis) {
-    return crisisReflection();
+    return CRISIS_REFLECTION;
   }
 
   const content = await generateReflection(checkIn, context);
@@ -52,9 +34,7 @@ export async function analyzeCheckIn(
   // Enforce the classifier's verdict — the model is never trusted to set risk.
   const riskLevel = risk.level;
   const safetyNotes =
-    riskLevel === "HIGH"
-      ? "Distress signals seem elevated. Consider talking to someone you trust, and remember support is available if things feel like too much."
-      : content.safetyNotes;
+    riskLevel === "HIGH" ? HIGH_RISK_SAFETY_NOTE : content.safetyNotes;
 
   return { ...content, riskLevel, safetyNotes };
 }

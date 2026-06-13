@@ -1,5 +1,6 @@
 import type { CheckIn, PreferredTone, ReflectionContent } from "@/lib/types";
 import type { AnalyzeContext } from "./prompt-templates";
+import { NOT_A_DIAGNOSIS } from "./safety-copy";
 
 /**
  * Deterministic, offline "analyzer" used when no AI key is configured.
@@ -183,7 +184,7 @@ export function mockAnalyze(
     [...themes][0] ?? "default";
 
   return {
-    emotionalSummary: `${moodPhrase(checkIn)} This is a reflection, not a diagnosis.`,
+    emotionalSummary: `${moodPhrase(checkIn)} ${NOT_A_DIAGNOSIS}`,
     detectedTriggers,
     patternHypothesis: pickPattern(themes),
     copingStrategy: copingFor(themes, tone),
