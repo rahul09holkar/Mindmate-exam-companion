@@ -1,4 +1,4 @@
-import type { AIReflection, CheckIn, Mood } from "@/lib/types";
+import type { AIReflection, CheckIn, CheckInTag, Mood } from "@/lib/types";
 
 /**
  * Deterministic weekly-pattern analytics. Pure functions over stored data —
@@ -146,8 +146,8 @@ export function recommendedHabit(checkIns: CheckIn[]): HabitSuggestion {
   }
   const recent = checkIns.slice(0, 7);
   const poorSleep = recent.filter((c) => c.sleepQuality === "POOR").length;
-  const tagCount = (tag: string) =>
-    recent.filter((c) => c.tags.includes(tag as never)).length;
+  const tagCount = (tag: CheckInTag) =>
+    recent.filter((c) => c.tags.includes(tag)).length;
   const avgStress = averageStress(recent);
 
   if (poorSleep >= Math.ceil(recent.length / 2)) {

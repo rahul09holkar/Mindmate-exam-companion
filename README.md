@@ -2,6 +2,12 @@
 
 A calm, private, mobile-first GenAI wellness companion for students preparing for high-stakes exams (NEET, JEE, CUET, CAT, GATE, UPSC, boards).
 
+## Chosen vertical
+
+**Mental-wellness / journaling assistant for high-stakes exam-prep students.**
+
+The persona is the exam aspirant (NEET, JEE, CUET, CAT, GATE, UPSC, boards) under sustained academic pressure. The assistant makes **logical, context-aware decisions** from each user's exam type, study phase, preferred tone, and recent reflections — and always lets a crisis signal override everything else. Its differentiating value is surfacing *hidden* emotional patterns a numeric mood tracker cannot.
+
 ## Problem statement
 
 Students preparing for high-stakes exams face severe stress, burnout, and self-doubt. Standard mood trackers capture numbers but miss the *story*. MindMate analyses open-ended daily journaling + mood logs to uncover **hidden stress triggers and emotional patterns standard trackers miss**, and offers hyper-personalised, contextual support — coping strategies, adaptive mindfulness, and an empathetic always-available companion. It is **not** a diagnosis tool or a therapist replacement.
@@ -59,6 +65,14 @@ npm run build      # production build
 ```
 
 Coverage focuses on the highest-value areas: safety classifier (crisis vs ordinary stress), mock analyzer (trigger detection + crisis short-circuit), validation schemas, analytics, chat companion (crisis routing), and UI smoke tests.
+
+## Assumptions
+
+- **No auth and no server database for the MVP.** Data persists on-device (browser storage) behind a single, swappable persistence service, so it can later move to a real backend (e.g. Supabase) without touching the UI.
+- **Not a therapist or diagnosis tool.** The crisis flow routes to human support and never claims to have contacted emergency services; the AI never diagnoses.
+- **Mock mode is the default path.** With no `OPENAI_API_KEY`, a deterministic offline analyzer + companion produce structured responses, so the full app runs with no key and no network — the app is always usable for an evaluator.
+- **English-language journals**, and **one user per device/browser** (no multi-account separation in the MVP).
+- Real LLM output is treated as untrusted: it is parsed in JSON mode, re-validated with Zod, and any failure degrades gracefully to the mock.
 
 ## Hackathon demo flow
 

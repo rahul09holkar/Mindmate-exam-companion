@@ -12,6 +12,7 @@ import { CopingCard } from "@/components/reflection/CopingCard";
 import { MindfulnessExerciseCard } from "@/components/reflection/MindfulnessExerciseCard";
 import { SafetyNotice } from "@/components/SafetyNotice";
 import { getStorage } from "@/lib/storage";
+import { postJson } from "@/lib/utils/api";
 import { useHydrated } from "@/lib/hooks/useHydrated";
 import type { AIReflection, CheckIn } from "@/lib/types";
 
@@ -62,24 +63,18 @@ export function ReflectionView() {
       setStatus("loading");
       const profile = storage.getProfile();
       try {
-        const res = await fetch("/api/analyze", {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({
-            checkIn: ci,
-            context: profile
-              ? {
-                  preferredTone: profile.preferredTone,
-                  examType: profile.examType,
-                  studyPhase: profile.studyPhase,
-                }
-              : undefined,
-          }),
-        });
-        if (!res.ok) throw new Error("Analysis failed");
-        const data = (await res.json()) as {
+        const data = await postJson<{
           reflection: Omit<AIReflection, "id" | "checkinId" | "createdAt">;
-        };
+        }>("/api/analyze", {
+          checkIn: ci,
+          context: profile
+            ? {
+                preferredTone: profile.preferredTone,
+                examType: profile.examType,
+                studyPhase: profile.studyPhase,
+              }
+            : undefined,
+        });
         const saved = storage.saveReflection(ci.id, data.reflection);
         if (saved.riskLevel === "CRISIS") {
           router.replace("/safety");

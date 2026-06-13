@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { getStorage } from "@/lib/storage";
+import { postJson } from "@/lib/utils/api";
 import { useHydrated } from "@/lib/hooks/useHydrated";
 import { sanitizeText } from "@/lib/utils/sanitize";
 import { cn } from "@/lib/utils/cn";
@@ -68,16 +69,13 @@ export function ChatPanel() {
     setLoading(true);
 
     try {
-      const res = await fetch("/api/chat", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({
+      const data = await postJson<{ reply: string; crisis: boolean }>(
+        "/api/chat",
+        {
           messages: next.slice(-HISTORY_LIMIT),
           context: contextRef.current,
-        }),
-      });
-      if (!res.ok) throw new Error("Chat failed");
-      const data = (await res.json()) as { reply: string; crisis: boolean };
+        },
+      );
 
       if (data.crisis) {
         router.push("/safety");
