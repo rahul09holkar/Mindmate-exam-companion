@@ -1,5 +1,5 @@
 import { PageHeader } from "@/components/PageHeader";
-import { Card } from "@/components/ui/Card";
+import { PrivacyControls } from "@/components/PrivacyControls";
 
 export default function PrivacyPage() {
   return (
@@ -10,12 +10,7 @@ export default function PrivacyPage() {
         backHref="/dashboard"
         backLabel="Patterns"
       />
-      <Card>
-        <p className="text-ink-soft">
-          A plain-language explanation of how AI is used, plus delete-data and
-          export-data controls, arrive in Pass 7.
-        </p>
-      </Card>
+      <PrivacyControls />
     </div>
   );
 }
