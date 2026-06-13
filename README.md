@@ -52,6 +52,8 @@ All AI config is **server-side only** — never prefixed `NEXT_PUBLIC_`.
 
 - API keys are read server-side only and never exposed to the client.
 - All user input is validated with Zod at every server boundary; no client-provided IDs/roles are trusted.
+- The AI endpoints (`/api/analyze`, `/api/chat`) are **rate-limited per IP** and reject oversized payloads (HTTP 429/413) before parsing, so the paid LLM key can't be hammered. The limiter is in-memory (per server instance) and sits behind a small interface, so it can later move to a shared store (e.g. Redis) without touching call sites.
+- **HTTP security headers** are sent on every response: a Content-Security-Policy (`frame-ancestors 'none'`, `object-src 'none'`, `connect-src 'self'`), plus `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, and `Permissions-Policy`.
 - Raw journal text and chat contents are **never logged**; errors return generic messages, never stack traces.
 - User content is rendered as escaped text (no `dangerouslySetInnerHTML`) and run through a sanitiser.
 - Data is stored locally on-device; the privacy screen offers export and full delete.

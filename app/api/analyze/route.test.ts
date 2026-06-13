@@ -1,5 +1,6 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, beforeEach } from "vitest";
 import { POST } from "./route";
+import { analyzeLimiter } from "@/lib/security/limiters";
 
 function req(body: unknown): Request {
   return new Request("http://localhost/api/analyze", {
@@ -8,6 +9,9 @@ function req(body: unknown): Request {
     body: typeof body === "string" ? body : JSON.stringify(body),
   });
 }
+
+// Reset the shared limiter so request counts don't leak between tests.
+beforeEach(() => analyzeLimiter.reset());
 
 const validCheckIn = {
   id: "c1",
@@ -47,5 +51,28 @@ describe("POST /api/analyze", () => {
     const data = await res.json();
     expect(data.reflection.riskLevel).toBe("CRISIS");
     expect(data.reflection.detectedTriggers).toHaveLength(0);
+  });
+
+  it("rate-limits after the per-IP budget is exhausted", async () => {
+    // Drain the budget (analyzeLimiter is 10/min), then expect a 429.
+    for (let i = 0; i < 10; i++) {
+      const ok = await POST(req({ checkIn: validCheckIn }));
+      expect(ok.status).toBe(200);
+    }
+    const blocked = await POST(req({ checkIn: validCheckIn }));
+    expect(blocked.status).toBe(429);
+    expect(blocked.headers.get("retry-after")).toBeTruthy();
+  });
+
+  it("rejects an oversized payload with 413", async () => {
+    // The guard reads content-length before parsing; set it explicitly since
+    // undici's Request doesn't populate it for a string body in the test env.
+    const oversized = new Request("http://localhost/api/analyze", {
+      method: "POST",
+      headers: { "content-type": "application/json", "content-length": "40000" },
+      body: JSON.stringify({ checkIn: validCheckIn }),
+    });
+    const res = await POST(oversized);
+    expect(res.status).toBe(413);
   });
 });
